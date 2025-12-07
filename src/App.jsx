@@ -1,10 +1,9 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+  import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Footer from './components/Footer';
-import Admin from "./pages/Admin/Admin";
-import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import Admin from "./pages/admin";
+import ProtectedAdminRoute from "./components/Orbit/ProtectedAdminRoute";
 
 const App = () => {
   return (
