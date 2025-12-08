@@ -5,7 +5,7 @@ import { CiUser, CiShoppingBasket, CiSearch } from "react-icons/ci";
 const Navbar = () => {
 
     const [isOpen, setIsOpen] = useState(false);
-    const menuItems = ['Home', 'Websites', 'About', 'Coming Soon...'];
+    const menuItems = ['Home', 'About'];
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);

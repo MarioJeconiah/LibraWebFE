@@ -1,10 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Footer from './components/Footer';
-import Admin from './pages/admin';
-import Login from './pages/login';
-import ProtectedAdminRoute from './components/Orbit/ProtectedAdminRoute';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import Footer from "./components/Footer";
+import Login from "./pages/Login";
+import Admin from "./pages/Admin";
+import DetailBook from "./pages/DetailBook";
+import ProtectedAdminRoute from "./components/Orbit/ProtectedAdminRoute";
 
 const App = () => {
   return (
@@ -25,6 +26,9 @@ const App = () => {
 
         {/* Login Page */}
         <Route path="/login" element={<Login />} />
+
+        {/* DetailBook Page */}
+        <Route path="/book/:id" element={<DetailBook />} />
 
         {/* Admin Page with Protection */}
         <Route
