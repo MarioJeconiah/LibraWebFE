@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import api from "../api/api";
+
+const BASE_URL = "https://librawebapi-production.up.railway.app";
 
 const Admin = () => {
   const [judul, setJudul] = useState("");
@@ -12,14 +13,15 @@ const Admin = () => {
   const [preview, setPreview] = useState(null);
 
   const [books, setBooks] = useState([]);
+  const [pdfView, setPdfView] = useState(null);
 
-  // Ambil token dari localStorage
   const token = localStorage.getItem("token");
 
   const loadBooks = async () => {
     try {
-      const res = await api.get("/api/books");
-      setBooks(res.data);
+      const res = await fetch(`${BASE_URL}/api/books`);
+      const data = await res.json();
+      setBooks(data);
     } catch (err) {
       console.error("Gagal mengambil buku:", err);
     }
@@ -43,18 +45,21 @@ const Admin = () => {
     formData.append("author", penulis);
     formData.append("year", tahun);
     formData.append("category", kategori);
-    formData.append("cover", cover);
-    formData.append("pdf", pdf);
+    if (cover) formData.append("cover", cover);
+    if (pdf) formData.append("pdf", pdf);
 
     try {
-      await api.post("/api/books", formData, {
+      const res = await fetch(`${BASE_URL}/api/books`, {
+        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
+        body: formData,
       });
 
-      alert("Buku berhasil ditambahkan");
+      if (!res.ok) throw new Error("Gagal menambahkan buku");
+
+      alert("Buku berhasil ditambahkan!");
       setJudul("");
       setPenulis("");
       setTahun("");
@@ -70,11 +75,28 @@ const Admin = () => {
     }
   };
 
+  const handleDownload = async (pdfPath) => {
+    try {
+      const response = await fetch(`${BASE_URL}/${pdfPath.replace(/\\/g, "/")}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = pdfPath.split("/").pop(); // Nama file otomatis
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Gagal mengunduh PDF:", err);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!confirm("Yakin hapus buku ini?")) return;
 
     try {
-      await api.delete(`/api/books/${id}`, {
+      await fetch(`${BASE_URL}/api/books/${id}`, {
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
       loadBooks();
@@ -89,7 +111,7 @@ const Admin = () => {
         Admin <span className="text-orange-500">Dashboard</span>
       </h1>
 
-      {/* ADD BOOK FORM */}
+      {/* Form Tambah Buku */}
       <form
         onSubmit={handleSubmit}
         className="bg-gray-800 p-6 rounded-xl mb-10 shadow-lg border border-teal-600/40 max-w-xl mx-auto"
@@ -132,8 +154,7 @@ const Admin = () => {
           className="w-full p-3 rounded bg-gray-700 border border-gray-600 mb-4"
         />
 
-        {/* COVER UPLOAD */}
-        <label className="block mb-2 text-sm">Cover Buku (JPG/PNG)</label>
+        <label className="block mb-2 text-sm">Cover Buku</label>
         <input
           type="file"
           accept="image/*"
@@ -145,12 +166,10 @@ const Admin = () => {
         {preview && (
           <img
             src={preview}
-            alt="Preview Cover"
             className="w-32 h-44 object-cover rounded-md border border-gray-600 mb-4"
           />
         )}
 
-        {/* PDF UPLOAD */}
         <label className="block mb-2 text-sm">File PDF Buku</label>
         <input
           type="file"
@@ -168,7 +187,7 @@ const Admin = () => {
         </button>
       </form>
 
-      {/* BOOK LIST */}
+      {/* Daftar Buku */}
       <h2 className="text-2xl font-semibold mb-4 text-center">
         Daftar <span className="text-orange-400">Buku</span>
       </h2>
@@ -179,22 +198,37 @@ const Admin = () => {
             key={book.id}
             className="bg-gray-800 p-4 rounded-xl shadow-md border border-teal-700/30"
           >
-            <img
-              src={`${import.meta.env.VITE_BASE_URL}${book.cover_path}`}
-              className="w-full h-48 object-cover rounded mb-3"
-            />
+            {book.cover_path && (
+              <img
+                src={`${BASE_URL}/${book.cover_path.replace(/\\/g, "/")}`}
+                className="w-full h-48 object-cover rounded mb-3"
+              />
+            )}
 
             <h3 className="font-semibold text-lg">{book.title}</h3>
             <p className="text-sm text-gray-300">{book.author}</p>
 
             <div className="flex gap-3 mt-3">
-              <a
-                href={`${import.meta.env.VITE_BASE_URL}${book.pdf_path}`}
-                target="_blank"
-                className="bg-blue-500 px-3 py-1 rounded text-sm"
-              >
-                PDF
-              </a>
+              {book.pdf_path && (
+                <button
+                  className="bg-indigo-500 px-3 py-1 rounded text-sm"
+                  onClick={() =>
+                    setPdfView(`${BASE_URL}/${book.pdf_path.replace(/\\/g, "/")}`)
+                  }
+                >
+                  Baca
+                </button>
+              )}
+
+              {book.pdf_path && (
+                <button
+                  className="bg-blue-500 px-3 py-1 rounded text-sm"
+                  onClick={() => handleDownload(book.pdf_path)}
+                >
+                  Unduh
+                </button>
+              )}
+
               <button
                 onClick={() => handleDelete(book.id)}
                 className="bg-red-600 px-3 py-1 rounded text-sm"
@@ -205,6 +239,24 @@ const Admin = () => {
           </div>
         ))}
       </div>
+
+      {/* PDF Viewer */}
+      {pdfView && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col z-50">
+          <button
+            onClick={() => setPdfView(null)}
+            className="absolute top-4 right-4 bg-red-600 px-4 py-2 rounded text-white font-bold"
+          >
+            ✕ Tutup
+          </button>
+
+          <iframe
+            src={pdfView}
+            className="w-full h-full border-none"
+            title="PDF Viewer"
+          ></iframe>
+        </div>
+      )}
     </div>
   );
 };

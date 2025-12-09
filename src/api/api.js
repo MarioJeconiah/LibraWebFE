@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://librawebapi-production.up.railway.app/",
+  baseURL: "https://librawebapi-production.up.railway.app",
   withCredentials: false,
 });
 
