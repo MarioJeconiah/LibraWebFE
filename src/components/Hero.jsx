@@ -3,12 +3,21 @@ import Orbit from "./Orbit/Orbit";
 
 const BASE_URL = "https://librawebapi-production.up.railway.app";
 
-const Hero = () => {
+const Hero = ({ searchParams }) => {
   const [books, setBooks] = useState([]);
 
   const loadBooks = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/api/books`);
+      let url = `${BASE_URL}/api/books`;
+
+      // Jika ada parameter pencarian → gunakan endpoint filter
+      if (searchParams?.name || searchParams?.category) {
+        url = `${BASE_URL}/api/books/filter?`;
+        if (searchParams.name) url += `name=${searchParams.name}&`;
+        if (searchParams.category) url += `category=${searchParams.category}&`;
+      }
+
+      const res = await fetch(url);
       const data = await res.json();
       setBooks(data);
     } catch (err) {
@@ -18,7 +27,7 @@ const Hero = () => {
 
   useEffect(() => {
     loadBooks();
-  }, []);
+  }, [searchParams]);
 
   const normalizePath = (path) => path?.replace(/\\/g, "/");
 
@@ -33,7 +42,6 @@ const Hero = () => {
       const response = await fetch(getFileUrl(pdfPath));
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
       a.download = pdfPath.split("/").pop();
@@ -47,7 +55,7 @@ const Hero = () => {
 
   return (
     <>
-      {/* HERO SECTION */}
+
       <section className="flex flex-col-reverse md:flex-row items-center justify-between min-h-screen px-6 md:px-12 bg-gradient-to-r from-gray-800 to-teal-900 text-white">
         <div className="w-full md:w-1/2 text-center md:text-left">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
@@ -63,7 +71,6 @@ const Hero = () => {
             Explore
           </a>
         </div>
-
         <div className="w-full sm:w-3/4 md:w-1/2 flex justify-center mt-8 md:mt-0">
           <Orbit />
         </div>
@@ -82,7 +89,6 @@ const Hero = () => {
                 key={book.id}
                 className="bg-gray-800/70 hover:bg-gray-700/70 transition rounded-xl p-4 shadow-md backdrop-blur-sm"
               >
-                {/* Larger Cover Size */}
                 <div className="w-full h-100 bg-gray-700 rounded-lg overflow-hidden mb-4 flex items-center justify-center">
                   {book.cover_path ? (
                     <img
@@ -95,15 +101,21 @@ const Hero = () => {
                   )}
                 </div>
 
-                {/* Book Details with label */}
                 <div className="text-sm mb-4">
-                  <p><span className="font-semibold text-teal-300">Name:</span> {book.title}</p>
-                  <p><span className="font-semibold text-teal-300">Author:</span> {book.author}</p>
-                  <p><span className="font-semibold text-teal-300">Category:</span> {book.category}</p>
-                  <p><span className="font-semibold text-teal-300">Year:</span> {book.year}</p>
+                  <p>
+                    <span className="font-semibold text-teal-300">Name:</span> {book.title}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-teal-300">Author:</span> {book.author}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-teal-300">Category:</span> {book.category}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-teal-300">Year:</span> {book.year}
+                  </p>
                 </div>
 
-                {/* Buttons */}
                 <div className="flex gap-2">
                   {book.pdf_path && (
                     <button

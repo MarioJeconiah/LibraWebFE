@@ -24,30 +24,6 @@ export function OrbitingCirclesDemo() {
                 style={{ marginBottom: '2rem' }}>
                 LibraWeb
             </span>
-
-            {/* FIRST ORBIT */}
-            <OrbitingCircle iconSize={30}
-                className='mt-4'
-                radius={110}>
-                <Icons.tailwind />
-                <Icons.mongo />
-                <Icons.express />
-                <Icons.java />
-                <Icons.tailwind />
-            </OrbitingCircle>
-
-            {/* SECOND ORBIT */}
-            <OrbitingCircle
-                iconSize={20}
-                radius={80}
-                reverse
-                speed={2}
-                className='mt-6'>
-                <Icons.mongo />
-                <Icons.express />
-                <Icons.java />
-                <Icons.tailwind />
-            </OrbitingCircle>
         </div>
     )
 }

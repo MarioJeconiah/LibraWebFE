@@ -8,7 +8,7 @@ const Footer = () => {
                 <div className='flex flex-col items-center justify-between mx-auto container md:flex-row'>
                     <p className='text-gray-400 text-sm text-center md:text-left'>
                         Copyright © 2025. All Rights Reserved <br />
-                        <a href="LibraWeb" className='text-white hover:text-purple-500'>
+                        <a className='text-white hover:text-purple-500'>
                             LibraWeb
                         </a>
                     </p>

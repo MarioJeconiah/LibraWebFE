@@ -6,31 +6,26 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import DetailBook from "./pages/DetailBook";
 import ProtectedAdminRoute from "./components/Orbit/ProtectedAdminRoute";
+import { useState } from "react";
 
 const App = () => {
+  const [searchParams, setSearchParams] = useState({ name: "", category: "" });
+
   return (
     <Router>
-      <Navbar />
+      <Navbar onSearch={(name, category) => setSearchParams({ name, category })} />
       <Routes>
-
-        {/* Main Page */}
         <Route
           path="/"
           element={
             <>
-              <Hero />
+              <Hero searchParams={searchParams} />
               <Footer />
             </>
           }
         />
-
-        {/* Login Page */}
         <Route path="/login" element={<Login />} />
-
-        {/* DetailBook Page */}
         <Route path="/book/:id" element={<DetailBook />} />
-
-        {/* Admin Page with Protection */}
         <Route
           path="/admin"
           element={
@@ -39,7 +34,6 @@ const App = () => {
             </ProtectedAdminRoute>
           }
         />
-
       </Routes>
     </Router>
   );
