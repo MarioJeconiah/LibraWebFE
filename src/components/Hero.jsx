@@ -1,88 +1,45 @@
 import { useEffect, useState } from "react";
+import Orbit from "./Orbit/Orbit";
 
 const BASE_URL = "https://librawebapi-production.up.railway.app";
 
-const Admin = () => {
-  const [judul, setJudul] = useState("");
-  const [penulis, setPenulis] = useState("");
-  const [tahun, setTahun] = useState("");
-  const [kategori, setKategori] = useState("");
-
-  const [cover, setCover] = useState(null);
-  const [pdf, setPdf] = useState(null);
-  const [preview, setPreview] = useState(null);
-
+const Hero = ({ searchParams }) => {
   const [books, setBooks] = useState([]);
-  const [pdfView, setPdfView] = useState(null);
-
-
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editBookId, setEditBookId] = useState(null);
-  const [editPreview, setEditPreview] = useState(null);
-
-  const token = localStorage.getItem("token");
 
   const loadBooks = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/api/books`);
+      let url = `${BASE_URL}/api/books`;
+
+      
+      if (searchParams?.name || searchParams?.category) {
+        url = `${BASE_URL}/api/books/filter?`;
+        if (searchParams.name) url += `name=${searchParams.name}&`;
+        if (searchParams.category) url += `category=${searchParams.category}&`;
+      }
+
+      const res = await fetch(url);
       const data = await res.json();
       setBooks(data);
     } catch (err) {
-      console.error("Gagal mengambil buku:", err);
+      console.error("Failed to fetch books:", err);
     }
   };
 
   useEffect(() => {
     loadBooks();
-  }, []);
+  }, [searchParams]);
 
-  const handleCoverChange = (e) => {
-    const file = e.target.files[0];
-    setCover(file);
-    setPreview(URL.createObjectURL(file));
-  };
+  const normalizePath = (path) => path?.replace(/\\/g, "/");
 
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("title", judul);
-    formData.append("author", penulis);
-    formData.append("year", tahun);
-    formData.append("category", kategori);
-    if (cover) formData.append("cover", cover);
-    if (pdf) formData.append("pdf", pdf);
-
-    try {
-      const res = await fetch(`${BASE_URL}/api/books`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Gagal menambahkan buku");
-
-      alert("Buku berhasil ditambahkan!");
-
-      setJudul("");
-      setPenulis("");
-      setTahun("");
-      setKategori("");
-      setCover(null);
-      setPdf(null);
-      setPreview(null);
-
-      loadBooks();
-    } catch (err) {
-      console.error(err);
-      alert("Gagal menambahkan buku");
-    }
+  const getFileUrl = (path) => {
+    if (!path) return null;
+    const normalized = normalizePath(path);
+    return `${BASE_URL}/${normalized}`;
   };
 
   const handleDownload = async (pdfPath) => {
     try {
-      const response = await fetch(`${BASE_URL}/${pdfPath.replace(/\\/g, "/")}`);
+      const response = await fetch(getFileUrl(pdfPath));
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -96,311 +53,98 @@ const Admin = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Yakin hapus buku ini?")) return;
-
-    try {
-      await fetch(`${BASE_URL}/api/books/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      loadBooks();
-    } catch (err) {
-      console.error("Gagal menghapus:", err);
-    }
-  };
-
-
-  const openEdit = (book) => {
-    setEditBookId(book.id);
-    setJudul(book.title);
-    setPenulis(book.author);
-    setTahun(book.year);
-    setKategori(book.category);
-
-  
-    setEditPreview(`${BASE_URL}/${book.cover_path.replace(/\\/g, "/")}`);
-
-    setCover(null);
-    setPdf(null);
-
-    setIsEditOpen(true);
-  };
-
-  
-  const handleEditCover = (e) => {
-    const file = e.target.files[0];
-    setCover(file);
-    setEditPreview(URL.createObjectURL(file));
-  };
-
-
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData();
-    formData.append("title", judul);
-    formData.append("author", penulis);
-    formData.append("year", tahun);
-    formData.append("category", kategori);
-
-    if (cover) formData.append("cover", cover);
-    if (pdf) formData.append("pdf", pdf);
-
-    try {
-      const res = await fetch(`${BASE_URL}/api/books/${editBookId}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Gagal update buku");
-
-      alert("Buku berhasil diperbarui!");
-      setIsEditOpen(false);
-      loadBooks();
-    } catch (err) {
-      console.error(err);
-      alert("Gagal update buku");
-    }
-  };
-
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Admin <span className="text-orange-500">Dashboard</span>
-      </h1>
+    <>
 
-   
-      <form
-        onSubmit={handleSubmit}
-        className="bg-gray-800 p-6 rounded-xl mb-10 shadow-lg border border-teal-600/40 max-w-xl mx-auto"
-      >
-        <h3 className="text-xl font-semibold mb-4 text-teal-400">Tambah Buku</h3>
-
-        <label className="block mb-2 text-sm">Judul Buku</label>
-        <input
-          type="text"
-          value={judul}
-          onChange={(e) => setJudul(e.target.value)}
-          required
-          className="w-full p-3 rounded bg-gray-700 border border-gray-600 mb-4"
-        />
-
-        <label className="block mb-2 text-sm">Penulis</label>
-        <input
-          type="text"
-          value={penulis}
-          onChange={(e) => setPenulis(e.target.value)}
-          required
-          className="w-full p-3 rounded bg-gray-700 border border-gray-600 mb-4"
-        />
-
-        <label className="block mb-2 text-sm">Tahun</label>
-        <input
-          type="number"
-          value={tahun}
-          onChange={(e) => setTahun(e.target.value)}
-          required
-          className="w-full p-3 rounded bg-gray-700 border border-gray-600 mb-4"
-        />
-
-        <label className="block mb-2 text-sm">Kategori</label>
-        <input
-          type="text"
-          value={kategori}
-          onChange={(e) => setKategori(e.target.value)}
-          required
-          className="w-full p-3 rounded bg-gray-700 border border-gray-600 mb-4"
-        />
-
-        <label className="block mb-2 text-sm">Cover Buku</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleCoverChange}
-          className="mb-3 w-full text-gray-300"
-        />
-
-        {preview && (
-          <img
-            src={preview}
-            className="w-32 h-44 object-cover rounded-md border border-gray-600 mb-4"
-          />
-        )}
-
-        <label className="block mb-2 text-sm">File PDF Buku</label>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setPdf(e.target.files[0])}
-          className="mb-6 w-full text-gray-300"
-        />
-
-        <button className="w-full bg-gradient-to-r from-green-400 to-blue-500 py-3 rounded-lg font-bold">
-          Tambahkan Buku
-        </button>
-      </form>
-
- 
-      <h2 className="text-2xl font-semibold mb-4 text-center">
-        Daftar <span className="text-orange-400">Buku</span>
-      </h2>
-
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {books.map((book) => (
-          <div
-            key={book.id}
-            className="bg-gray-800 p-4 rounded-xl shadow-md border border-teal-700/30"
+      <section className="flex flex-col-reverse md:flex-row items-center justify-between min-h-screen px-6 md:px-12 bg-gradient-to-r from-gray-800 to-teal-900 text-white">
+        <div className="w-full md:w-1/2 text-center md:text-left">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
+            Welcome to <span className="text-orange-500">LibraWeb</span>
+          </h1>
+          <p className="text-lg sm:text-xl mb-6 leading-relaxed">
+            Browse our eBook collection anytime, anywhere.
+          </p>
+          <a
+            href="#books"
+            className="inline-block bg-gradient-to-r from-green-400 to-red-500 px-6 py-3 rounded-full hover:opacity-90 transition"
           >
-            {book.cover_path && (
-              <img
-                src={`${BASE_URL}/${book.cover_path.replace(/\\/g, "/")}`}
-                className="w-full h-48 object-cover rounded mb-3"
-              />
-            )}
+            Explore
+          </a>
+        </div>
+        <div className="w-full sm:w-3/4 md:w-1/2 flex justify-center mt-8 md:mt-0">
+          <Orbit />
+        </div>
+      </section>
 
-            <div className="text-sm text-gray-200 space-y-1">
-              <p><span className="text-teal-400 font-semibold">Nama:</span> {book.title}</p>
-              <p><span className="text-teal-400 font-semibold">Author:</span> {book.author}</p>
-              <p><span className="text-teal-400 font-semibold">Kategori:</span> {book.category}</p>
-              <p><span className="text-teal-400 font-semibold">Tahun:</span> {book.year}</p>
-            </div>
+  
+      <section id="books" className="px-6 md:px-12 py-16 bg-gradient-to-br from-gray-900 to-teal-800 text-white">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
+            Explore Our <span className="text-orange-400">Books</span>
+          </h2>
 
-            <div className="flex gap-3 mt-3 flex-wrap">
-              <button
-                onClick={() => openEdit(book)}
-                className="bg-yellow-500 px-3 py-1 rounded text-sm"
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {books.map((book) => (
+              <div
+                key={book.id}
+                className="bg-gray-800/70 hover:bg-gray-700/70 transition rounded-xl p-4 shadow-md backdrop-blur-sm"
               >
-                Edit
-              </button>
+             
+                <div className="w-full flex justify-center mb-4">
+                  {book.cover_path ? (
+                    <img
+                      src={getFileUrl(book.cover_path)}
+                      alt={book.title}
+                      className="w-[180px] h-[260px] object-cover rounded-lg shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-[180px] h-[260px] bg-gray-700 rounded-lg flex items-center justify-center text-gray-400">
+                      No Cover
+                    </div>
+                  )}
+                </div>
 
-              {book.pdf_path && (
-                <button
-                  className="bg-indigo-500 px-3 py-1 rounded text-sm"
-                  onClick={() =>
-                    setPdfView(`${BASE_URL}/${book.pdf_path.replace(/\\/g, "/")}`)
-                  }
-                >
-                  Baca
-                </button>
-              )}
+                <div className="text-sm mb-4">
+                  <p>
+                    <span className="font-semibold text-teal-300">Name:</span> {book.title}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-teal-300">Author:</span> {book.author}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-teal-300">Category:</span> {book.category}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-teal-300">Year:</span> {book.year}
+                  </p>
+                </div>
 
-              {book.pdf_path && (
-                <button
-                  className="bg-blue-500 px-3 py-1 rounded text-sm"
-                  onClick={() => handleDownload(book.pdf_path)}
-                >
-                  Unduh
-                </button>
-              )}
+                <div className="flex gap-2">
+                  {book.pdf_path && (
+                    <button
+                      className="flex-1 bg-indigo-500 hover:bg-indigo-600 transition text-white py-2 rounded-lg text-sm"
+                      onClick={() => window.open(getFileUrl(book.pdf_path), "_blank")}
+                    >
+                      Baca
+                    </button>
+                  )}
 
-              <button
-                onClick={() => handleDelete(book.id)}
-                className="bg-red-600 px-3 py-1 rounded text-sm"
-              >
-                Hapus
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
- 
-      {isEditOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-          <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md">
-            <h2 className="text-xl mb-4">Edit Buku</h2>
-
-            <form onSubmit={handleUpdate}>
-              <label className="block mb-2 text-sm">Judul</label>
-              <input
-                className="w-full p-2 mb-3 bg-gray-700 rounded"
-                value={judul}
-                onChange={(e) => setJudul(e.target.value)}
-              />
-
-              <label className="block mb-2 text-sm">Penulis</label>
-              <input
-                className="w-full p-2 mb-3 bg-gray-700 rounded"
-                value={penulis}
-                onChange={(e) => setPenulis(e.target.value)}
-              />
-
-              <label className="block mb-2 text-sm">Tahun</label>
-              <input
-                className="w-full p-2 mb-3 bg-gray-700 rounded"
-                value={tahun}
-                onChange={(e) => setTahun(e.target.value)}
-              />
-
-              <label className="block mb-2 text-sm">Kategori</label>
-              <input
-                className="w-full p-2 mb-3 bg-gray-700 rounded"
-                value={kategori}
-                onChange={(e) => setKategori(e.target.value)}
-              />
-
-              <label className="block mb-2 text-sm">Ganti Cover</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleEditCover}
-                className="mb-3 w-full text-gray-300"
-              />
-
-              {editPreview && (
-                <img
-                  src={editPreview}
-                  className="w-32 h-44 object-cover rounded border mb-4"
-                />
-              )}
-
-              <label className="block mb-2 text-sm">Ganti PDF</label>
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => setPdf(e.target.files[0])}
-                className="mb-4 w-full text-gray-300"
-              />
-
-              <div className="flex gap-3 mt-4">
-                <button className="bg-green-600 px-4 py-2 rounded">
-                  Simpan
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsEditOpen(false)}
-                  className="bg-red-600 px-4 py-2 rounded"
-                >
-                  Batal
-                </button>
+                  {book.pdf_path && (
+                    <button
+                      className="flex-1 bg-blue-500 hover:bg-blue-600 transition text-white py-2 rounded-lg text-sm"
+                      onClick={() => handleDownload(book.pdf_path)}
+                    >
+                      Unduh
+                    </button>
+                  )}
+                </div>
               </div>
-            </form>
+            ))}
           </div>
         </div>
-      )}
-
-    
-      {pdfView && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col z-50">
-          <button
-            onClick={() => setPdfView(null)}
-            className="absolute top-4 right-4 bg-red-600 px-4 py-2 rounded text-white font-bold"
-          >
-            ✕ Tutup
-          </button>
-
-          <iframe
-            src={pdfView}
-            className="w-full h-full border-none"
-            title="PDF Viewer"
-          ></iframe>
-        </div>
-      )}
-    </div>
+      </section>
+    </>
   );
 };
 
-export default Admin;
+export default Hero;
