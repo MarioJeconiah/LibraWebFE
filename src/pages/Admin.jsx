@@ -15,7 +15,7 @@ const Admin = () => {
   const [books, setBooks] = useState([]);
   const [pdfView, setPdfView] = useState(null);
 
-  // EDIT STATE
+
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editBookId, setEditBookId] = useState(null);
   const [editPreview, setEditPreview] = useState(null);
@@ -42,7 +42,7 @@ const Admin = () => {
     setPreview(URL.createObjectURL(file));
   };
 
-  // CREATE BOOK
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -110,7 +110,7 @@ const Admin = () => {
     }
   };
 
-  // OPEN EDIT
+
   const openEdit = (book) => {
     setEditBookId(book.id);
     setJudul(book.title);
@@ -118,7 +118,7 @@ const Admin = () => {
     setTahun(book.year);
     setKategori(book.category);
 
-    // tampilkan preview cover lama
+  
     setEditPreview(`${BASE_URL}/${book.cover_path.replace(/\\/g, "/")}`);
 
     setCover(null);
@@ -127,14 +127,14 @@ const Admin = () => {
     setIsEditOpen(true);
   };
 
-  // EDIT COVER CHANGE
+  
   const handleEditCover = (e) => {
     const file = e.target.files[0];
     setCover(file);
     setEditPreview(URL.createObjectURL(file));
   };
 
-  // UPDATE BOOK
+
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -171,7 +171,7 @@ const Admin = () => {
         Admin <span className="text-orange-500">Dashboard</span>
       </h1>
 
-      {/* FORM TAMBAH */}
+   
       <form
         onSubmit={handleSubmit}
         className="bg-gray-800 p-6 rounded-xl mb-10 shadow-lg border border-teal-600/40 max-w-xl mx-auto"
@@ -242,7 +242,7 @@ const Admin = () => {
         </button>
       </form>
 
-      {/* DAFTAR BUKU */}
+ 
       <h2 className="text-2xl font-semibold mb-4 text-center">
         Daftar <span className="text-orange-400">Buku</span>
       </h2>
@@ -306,7 +306,7 @@ const Admin = () => {
         ))}
       </div>
 
-      {/* EDIT MODAL */}
+ 
       {isEditOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md">
@@ -382,7 +382,7 @@ const Admin = () => {
         </div>
       )}
 
-      {/* PDF VIEWER */}
+    
       {pdfView && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col z-50">
           <button
