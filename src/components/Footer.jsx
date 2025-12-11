@@ -13,17 +13,17 @@ const Footer = () => {
                         </a>
                     </p>
                     <div className='flex space-x-4 mt-4 md:mt-0'>
-                        <a href="LibraWeb"
+                        <a href=""
                             className='text-gray-400 rounded-md bg-white/10 py-1 px-1 hover:text-white 
                             transition duration-300 ease-in-out'>
                             <FaTwitter />
                         </a>
-                        <a href="https://www.linkedin.com/company/hexagondigtial-services/"
+                        <a href=""
                             className='text-gray-400 rounded-md bg-white/10 py-1 px-1 hover:text-white 
                           transition duration-300 ease-in-out'>
                             <FaLinkedinIn />
                         </a>
-                        <a href="https://github.com/HexagonDService"
+                        <a href=""
                             className='text-gray-400 rounded-md bg-white/10 py-1 px-1 hover:text-white 
                           transition duration-300 ease-in-out'>
                             <FaGithub />
