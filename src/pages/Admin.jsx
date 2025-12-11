@@ -15,7 +15,6 @@ const Admin = () => {
   const [books, setBooks] = useState([]);
   const [pdfView, setPdfView] = useState(null);
 
-
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editBookId, setEditBookId] = useState(null);
   const [editPreview, setEditPreview] = useState(null);
@@ -41,7 +40,6 @@ const Admin = () => {
     setCover(file);
     setPreview(URL.createObjectURL(file));
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -110,7 +108,6 @@ const Admin = () => {
     }
   };
 
-
   const openEdit = (book) => {
     setEditBookId(book.id);
     setJudul(book.title);
@@ -118,7 +115,6 @@ const Admin = () => {
     setTahun(book.year);
     setKategori(book.category);
 
-  
     setEditPreview(`${BASE_URL}/${book.cover_path.replace(/\\/g, "/")}`);
 
     setCover(null);
@@ -127,13 +123,11 @@ const Admin = () => {
     setIsEditOpen(true);
   };
 
-  
   const handleEditCover = (e) => {
     const file = e.target.files[0];
     setCover(file);
     setEditPreview(URL.createObjectURL(file));
   };
-
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -171,7 +165,7 @@ const Admin = () => {
         Admin <span className="text-orange-500">Dashboard</span>
       </h1>
 
-   
+
       <form
         onSubmit={handleSubmit}
         className="bg-gray-800 p-6 rounded-xl mb-10 shadow-lg border border-teal-600/40 max-w-xl mx-auto"
@@ -242,7 +236,7 @@ const Admin = () => {
         </button>
       </form>
 
- 
+    
       <h2 className="text-2xl font-semibold mb-4 text-center">
         Daftar <span className="text-orange-400">Buku</span>
       </h2>
@@ -306,10 +300,12 @@ const Admin = () => {
         ))}
       </div>
 
- 
+
       {isEditOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-          <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+          <div className="bg-gray-800 p-6 rounded-xl w-full max-w-md 
+                          max-h-[90vh] overflow-y-auto shadow-lg border border-gray-600">
+
             <h2 className="text-xl mb-4">Edit Buku</h2>
 
             <form onSubmit={handleUpdate}>
@@ -364,7 +360,7 @@ const Admin = () => {
                 className="mb-4 w-full text-gray-300"
               />
 
-              <div className="flex gap-3 mt-4">
+              <div className="flex gap-3 mt-4 justify-end">
                 <button className="bg-green-600 px-4 py-2 rounded">
                   Simpan
                 </button>
@@ -382,7 +378,6 @@ const Admin = () => {
         </div>
       )}
 
-    
       {pdfView && (
         <div className="fixed inset-0 bg-black bg-opacity-90 flex flex-col z-50">
           <button
