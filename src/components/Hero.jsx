@@ -6,11 +6,13 @@ const BASE_URL = "https://librawebapi-production.up.railway.app";
 const Hero = ({ searchParams }) => {
   const [books, setBooks] = useState([]);
 
+  // ===== PDF Modal State =====
+  const [pdfUrl, setPdfUrl] = useState(null);
+
   const loadBooks = async () => {
     try {
       let url = `${BASE_URL}/api/books`;
 
-      
       if (searchParams?.name || searchParams?.category) {
         url = `${BASE_URL}/api/books/filter?`;
         if (searchParams.name) url += `name=${searchParams.name}&`;
@@ -33,8 +35,7 @@ const Hero = ({ searchParams }) => {
 
   const getFileUrl = (path) => {
     if (!path) return null;
-    const normalized = normalizePath(path);
-    return `${BASE_URL}/${normalized}`;
+    return `${BASE_URL}/${normalizePath(path)}`;
   };
 
   const handleDownload = async (pdfPath) => {
@@ -55,7 +56,7 @@ const Hero = ({ searchParams }) => {
 
   return (
     <>
-
+      {/* ================= HERO ================= */}
       <section className="flex flex-col-reverse md:flex-row items-center justify-between min-h-screen px-6 md:px-12 bg-gradient-to-r from-gray-800 to-teal-900 text-white">
         <div className="w-full md:w-1/2 text-center md:text-left">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
@@ -76,8 +77,11 @@ const Hero = ({ searchParams }) => {
         </div>
       </section>
 
-  
-      <section id="books" className="px-6 md:px-12 py-16 bg-gradient-to-br from-gray-900 to-teal-800 text-white">
+      {/* ================= BOOK LIST ================= */}
+      <section
+        id="books"
+        className="px-6 md:px-12 py-16 bg-gradient-to-br from-gray-900 to-teal-800 text-white"
+      >
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
             Explore Our <span className="text-orange-400">Books</span>
@@ -89,7 +93,6 @@ const Hero = ({ searchParams }) => {
                 key={book.id}
                 className="bg-gray-800/70 hover:bg-gray-700/70 transition rounded-xl p-4 shadow-md backdrop-blur-sm"
               >
-             
                 <div className="w-full flex justify-center mb-4">
                   {book.cover_path ? (
                     <img
@@ -105,25 +108,17 @@ const Hero = ({ searchParams }) => {
                 </div>
 
                 <div className="text-sm mb-4">
-                  <p>
-                    <span className="font-semibold text-teal-300">Name:</span> {book.title}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-teal-300">Author:</span> {book.author}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-teal-300">Category:</span> {book.category}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-teal-300">Year:</span> {book.year}
-                  </p>
+                  <p><span className="font-semibold text-teal-300">Name:</span> {book.title}</p>
+                  <p><span className="font-semibold text-teal-300">Author:</span> {book.author}</p>
+                  <p><span className="font-semibold text-teal-300">Category:</span> {book.category}</p>
+                  <p><span className="font-semibold text-teal-300">Year:</span> {book.year}</p>
                 </div>
 
                 <div className="flex gap-2">
                   {book.pdf_path && (
                     <button
                       className="flex-1 bg-indigo-500 hover:bg-indigo-600 transition text-white py-2 rounded-lg text-sm"
-                      onClick={() => window.open(getFileUrl(book.pdf_path), "_blank")}
+                      onClick={() => setPdfUrl(getFileUrl(book.pdf_path))}
                     >
                       Baca
                     </button>
@@ -143,6 +138,30 @@ const Hero = ({ searchParams }) => {
           </div>
         </div>
       </section>
+
+      {/* ================= PDF MODAL ================= */}
+      {pdfUrl && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex justify-center items-center">
+          <div className="bg-white rounded-xl w-full max-w-5xl h-[90vh] flex flex-col">
+
+            <div className="flex justify-between items-center px-4 py-3 bg-gray-100 rounded-t-xl">
+              <h3 className="font-semibold text-gray-700">PDF Viewer</h3>
+              <button
+                onClick={() => setPdfUrl(null)}
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+              >
+                Tutup
+              </button>
+            </div>
+
+            <iframe
+              src={pdfUrl}
+              className="w-full h-full rounded-b-xl"
+              title="PDF Viewer"
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };
